@@ -4,7 +4,7 @@ export const QUERY_RAW_ENDPOINT = `${SERVER_URL}/query-raw`;
 export const WORKSPACE_ENDPOINT = `${SERVER_URL}/workspaces`;
 export const COMMON_GREMLIN_ERROR = 'Invalid query. Please execute a query to get a set of vertices';
 
-export let GRAPH_IMPL = "vis" // 'vis' | 'cytoscape' | 'sigma'
+export let GRAPH_IMPL = "cytoscape" // 'vis' | 'cytoscape' | 'sigma'
 export const ACTIONS = {
   SET_HOST: 'SET_HOST',
   SET_PORT: 'SET_PORT',
