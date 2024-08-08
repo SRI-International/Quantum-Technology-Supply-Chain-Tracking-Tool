@@ -9,6 +9,7 @@ import { COMMON_GREMLIN_ERROR, QUERY_ENDPOINT } from "../../constants";
 import { onFetchQuery } from "../../logics/actionHelper";
 import { RootState } from "../../app/store";
 import { highlightNodesAndEdges } from "../../logics/graphImpl/visImpl";
+import { GRAPH_IMPL } from "../../constants";
 
 const Query = ({ }) => {
   const dispatch = useDispatch()
@@ -27,7 +28,9 @@ const Query = ({ }) => {
 
   function sendQuery() {
     dispatch(setError(null));
-    highlightNodesAndEdges(null, null);
+    if (GRAPH_IMPL === 'vis') {
+      highlightNodesAndEdges(null, null);
+    }
     axios
       .post(
         QUERY_ENDPOINT,
