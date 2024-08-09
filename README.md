@@ -54,6 +54,20 @@ Shift-clicking in empty space will open a dialog to add a new node to the graph.
 
 Shift-click-drag between two nodes will add an edge.
 
+### Query Builder Tab
+Select a node type: Component, Entity, or Material
+Under the "Where" section
+  - "WHERE" dropdown indicates the property name.
+  - "CLAUSE" dropdown indicates the comparator to use(< is less than, <= is less than or equal to, > is greater than, >= is greater than or equal to, == is equals)
+  - The right-most text field is the value to use.
+  - add additional "And" or "Or" conditions by clicking buttons.
+  - submit to run the query. Matching nodes will be in the graph and Table View and final query run will be in query history.
+    
+Query conditions are run left to right.
+For example:
+  Select "Entity" WHERE name == "FormFactor" AND country == "United States" OR risk == "low" AND type == "Manufacturer"
+  with parentheses is ((name == "FormFactor" && country == "United States") || risk == "low") && (type == "Manufacturer")
+
 ### Adding Custom Icons
 Add icons into the src/assets/icons folder.
 Edit src/assets/icons.ts to add a mapping for node type to icon.
