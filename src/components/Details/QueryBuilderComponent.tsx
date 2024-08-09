@@ -24,8 +24,6 @@ import { highlightNodesAndEdges } from '../../logics/graphImpl/visImpl';
 import { GRAPH_IMPL } from '../../constants';
 import { addWhereField, removeWhereField, selectQueryBuilder, setClause, setPropertyName, setPropertyValue, setSelectedType } from '../../reducers/queryBuilderReducer';
 
-//g.V().hasLabel('Vertex').or(__.has('name', 'Jill'), __.has('name', 'Bob'))
-
 
 export type WhereField = {
     propertyName: string;
@@ -88,49 +86,10 @@ export const QueryBuilder = () => {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        let query = `g.V().hasLabel('${selectedType}')`;
-        console.log(whereFields)
 
-        whereFields.forEach((form) => {
-            let expression;
-
-            switch (form.whereClause) {
-                case CLAUSES.EQUAL:
-                    expression = `'${form.propertyValue}'`;
-                    break;
-                case CLAUSES.GREATER_THAN:
-                    expression = `P.gt(${form.propertyValue})`;
-                    break;
-                case CLAUSES.GREATER_THAN_EQ:
-                    expression = `P.gte(${form.propertyValue})`;
-                    break;
-                case CLAUSES.LESS_THAN:
-                    expression = `P.lt(${form.propertyValue})`;
-                    break;
-                case CLAUSES.LESS_THAN_EQ:
-                    expression = `P.lte(${form.propertyValue})`;
-                    break
-            }
-            expression = `('${form.propertyName}', ${expression})`;
-
-            switch (form.operator) {
-                case OPERATORS.NONE:
-                    query += `.has${expression}`;
-                    break;
-                case OPERATORS.AND:
-                    query += `.and(__.has${expression})`;
-                    break;
-                case OPERATORS.OR:
-                    query += `.or(__.has${expression})`;
-                    break;
-            }
-
-
-        })
         dispatch(clearGraph());
         dispatch(setError(null));
-        query = buildNestedQuery(whereFields)
-        console.log(query)
+        const query = buildNestedQuery(whereFields)
 
         if (GRAPH_IMPL === 'vis') {
             highlightNodesAndEdges(null, null);
@@ -152,118 +111,61 @@ export const QueryBuilder = () => {
 
     function buildNestedQuery(whereFields: WhereField[]): string {
         if (whereFields.length === 0) {
-            return "g.V()";  // Return a base traversal string if no conditions
+            return "g.V()";
         }
-
         function convertClauseToPredicate(clause: string, value: any) {
             switch (clause) {
                 case CLAUSES.GREATER_THAN:
-                    return `P.gt(${JSON.stringify(value)})`;
+                    return `P.gt(${value})`;
                 case CLAUSES.GREATER_THAN_EQ:
-                    return `P.gte(${JSON.stringify(value)})`;
+                    return `P.gte(${value})`;
                 case CLAUSES.LESS_THAN:
-                    return `P.lt(${JSON.stringify(value)})`;
+                    return `P.lt(${value})`;
                 case CLAUSES.LESS_THAN_EQ:
-                    return `P.lte(${JSON.stringify(value)})`;
+                    return `P.lte(${value})`;
                 case CLAUSES.EQUAL:
                 default:
-                    return JSON.stringify(value);  // For equality, the value is used directly
+                    return `'${value}'`;
             }
         }
 
         function buildTraversal(fields: WhereField[], isFirst: boolean): string {
-
-
             const firstField = fields[0];
             const restFields = fields.slice(1);
 
             const predicate = convertClauseToPredicate(firstField.whereClause, firstField.propertyValue);
             const currentStep = `__.has('${firstField.propertyName}', ${predicate})`;
 
-            const prefix = isFirst == true? '' : '__';
+            const prefix = isFirst == true ? '' : '__';
 
             if (restFields.length === 0 && firstField.operator === OPERATORS.NONE) {
-                return currentStep;
+                if (isFirst) {
+                    return `.has('${firstField.propertyName}', ${predicate})`;
+                }
+                else {
+                    return currentStep;
+                }
             }
             else if (firstField.operator === OPERATORS.AND) {
                 return `${prefix}.and(${currentStep}, ${buildTraversal(restFields, false)})`;
-            } 
+            }
             else if (firstField.operator === OPERATORS.OR) {
                 return `${prefix}.or(${currentStep}, ${buildTraversal(restFields, false)})`;
             }
             return "";
         }
-        return `g.V().hasLabel('${selectedType}')${buildTraversal(whereFields, true)}`;
+        let reversedWhereFields = [...whereFields].reverse();
+        return `g.V().hasLabel('${selectedType}')${buildTraversal(reversedWhereFields, true)}`;
     }
-
-    /* 
-    BC: if whereFields.length == 1
-    const whereFields: WhereField[] = [
-    { propertyName: 'country', whereClause: CLAUSES.EQUAL, propertyValue: 'Denmark', operator: OPERATORS.OR },
-    { propertyName: 'risk', whereClause: CLAUSES.EQUAL, propertyValue: 'high', operator: OPERATORS.AND },
-    { propertyName: 'population', whereClause: CLAUSES.GREATER_THAN, propertyValue: 5000000, operator: OPERATORS.AND },
-    { propertyName: 'stability', whereClause: CLAUSES.EQUAL, propertyValue: 'low', operator: OPERATORS.NONE },
-    ];
-
-
-           { propertyName: 'stability', whereClause: CLAUSES.EQUAL, propertyValue: 'low', operator: OPERATORS.NONE },
-            { propertyName: 'population', whereClause: CLAUSES.GREATER_THAN, propertyValue: 5000000, operator: OPERATORS.AND },
-        { propertyName: 'risk', whereClause: CLAUSES.EQUAL, propertyValue: 'high', operator: OPERATORS.AND },
-      { propertyName: 'country', whereClause: CLAUSES.EQUAL, propertyValue: 'Denmark', operator: OPERATORS.OR },
-   
-      
-      return OR(country, 
-
-      process OR(country, risk)
-      return AND(OR(country, risk), 
-
-      return AND(AND(OR(country, risk), population), 
-
-      return AND(AND(AND))
-
-    
-    looks like: g.V().hasLabel(Entity).AND(stability, .AND(population, OR(risk, country)))
-    
-    base: 
-    
-
-
-
-    g.V().hasLabel('Entity').and(
-  __.or(
-    __.and(
-      __.has('country', 'Denmark'),
-      __.has('risk', 'high')
-    ),
-    __.and(
-      __.has('country', 'Norway'),
-      __.has('population', P.gt(5000000))
-    )
-  ),
-  __.has('stability', 'low')
-)
-
-
-
-g.V().hasLabel('Entity').and(
-  __.or(
-    __.and(
-      __.has('country', 'Denmark'),
-      __.has('risk', 'high')
-    ),
-    __.and(
-      __.has('country', 'Norway'),
-      __.has('population', P.gt(5000000))
-    )
-  ),
-  __.has('stability', 'low')
-)
-    */
-
 
     const whereRow = (form: WhereField, index: number) => {
         return (
             <Stack key={index} spacing={1} sx={{ mb: 2, width: '100%' }}>
+                {whereFields[index].operator !== OPERATORS.NONE && (
+                    <Typography variant="subtitle1" align="center">
+                        {whereFields[index].operator}
+                    </Typography>
+                )}
                 <Stack direction="row" spacing={0.5} sx={{ display: 'flex', width: "100%" }}>
                     <Paper elevation={10} sx={{ width: "40%", marginRight: 0.5, flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                         <FormControl size="small" sx={{ flex: 1, height: '100%' }}>
@@ -361,11 +263,6 @@ g.V().hasLabel('Entity').and(
                         <ClearIcon fontSize="small" />
                     </IconButton>
                 </Stack>
-                {whereFields[index].operator !== OPERATORS.NONE && (
-                    <Typography variant="subtitle1" align="center">
-                        {whereFields[index].operator}
-                    </Typography>
-                )}
             </Stack>
         )
     }

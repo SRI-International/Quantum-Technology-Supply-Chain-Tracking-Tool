@@ -2,8 +2,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
 import _ from 'lodash';
-import { defaultNodeLabel, EdgeData, NodeData } from "../logics/utils";
-import { Workspace } from '../components/Details/SettingsComponent';
 import { CLAUSES, OPERATORS, WhereField } from '../components/Details/QueryBuilderComponent';
 import { DIALOG_TYPES } from '../components/ModalDialog/ModalDialogComponent';
 
@@ -25,40 +23,35 @@ const slice = createSlice({
     initialState,
     reducers: {
         setSelectedType: (state, action) => {
-            const {selectedType, suggestions} = action.payload
+            const { selectedType, suggestions } = action.payload
             state.selectedType = selectedType
             state.whereOptions = suggestions[DIALOG_TYPES.NODE]?.labels[selectedType] ?? [];
         },
         setPropertyName: (state, action) => {
             const { value, index } = action.payload
             state.whereFields = state.whereFields.map((whereField, i) =>
-                    i === index ? { ...whereField, propertyName: value } : whereField
-                );
+                i === index ? { ...whereField, propertyName: value } : whereField
+            );
         },
         setClause: (state, action) => {
             const { value, index } = action.payload
             state.whereFields = state.whereFields.map((whereField, i) =>
-                    i === index ? { ...whereField, whereClause: value } : whereField
-                );
+                i === index ? { ...whereField, whereClause: value } : whereField
+            );
         },
         setPropertyValue: (state, action) => {
             const { value, index } = action.payload
             state.whereFields = state.whereFields.map((whereField, i) =>
-                    i === index ? { ...whereField, propertyValue: value } : whereField
-                );
+                i === index ? { ...whereField, propertyValue: value } : whereField
+            );
         },
         addWhereField: (state, action) => {
             const operator = action.payload
-            const length = state.whereFields.length;
-            if (length > 0) {
-                state.whereFields[length - 1].operator = operator;
-            }
-
             let object = {
                 propertyName: '',
                 whereClause: CLAUSES.EQUAL,
                 propertyValue: '',
-                operator: OPERATORS.NONE,
+                operator: operator,
             };
             state.whereFields = [...state.whereFields, object];
         },
@@ -66,7 +59,7 @@ const slice = createSlice({
             const index = action.payload;
             let data = [...state.whereFields];
             if (index == 0 && data.length > 1) {
-                data[1] = {...data[1], operator: OPERATORS.NONE}
+                data[1] = { ...data[1], operator: OPERATORS.NONE }
             }
             data.splice(index, 1);
             state.whereFields = data;
@@ -77,11 +70,6 @@ const slice = createSlice({
             data.splice(index, 1);
             state.whereFields = data;
         },
-
-
-
-
-
     },
 });
 
