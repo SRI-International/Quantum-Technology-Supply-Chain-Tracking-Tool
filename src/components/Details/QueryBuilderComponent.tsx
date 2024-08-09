@@ -322,12 +322,20 @@ export const QueryBuilder = () => {
                             ))}
                         </Grid>
                         <Grid item xs={2} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '20px' }}>
-                            <Button onClick={() => addFields(OPERATORS.AND)} variant="outlined" color="secondary">
-                                And
-                            </Button>
-                            <Button onClick={() => addFields(OPERATORS.OR)} variant="outlined" color="secondary">
-                                Or
-                            </Button>
+                            {whereFields.length === 0 ? (
+                                <Button onClick={() => addFields(OPERATORS.NONE)} variant="outlined" color="secondary">
+                                    Add Condition
+                                </Button>
+                            ) : (
+                                <>
+                                    <Button onClick={() => addFields(OPERATORS.AND)} variant="outlined" color="secondary">
+                                        And
+                                    </Button>
+                                    <Button onClick={() => addFields(OPERATORS.OR)} variant="outlined" color="secondary">
+                                        Or
+                                    </Button>
+                                </>
+                            )}
                         </Grid>
                         <Button type="submit" variant="outlined" color="secondary">
                             Submit
