@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
 
 const initialState = {
-  host: 'localhost',
+  host: 'gremlin-server',
   port: '8182',
   query: 'g.V()',
   error: null
