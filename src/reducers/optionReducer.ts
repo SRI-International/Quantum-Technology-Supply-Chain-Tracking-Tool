@@ -12,7 +12,7 @@ export interface NodeLabel {
 type OptionState = {
   nodeLabels: NodeLabel[];
   queryHistory: string[];
-  nodeLimit: number;
+  nodeLimit: number | null;
   graphOptions: GraphOptions;
 };
 
@@ -22,7 +22,7 @@ const initialNodeLabels: NodeLabel[] = Object.entries(INITIAL_LABEL_MAPPINGS).ma
 const initialState: OptionState = {
   nodeLabels: initialNodeLabels,
   queryHistory: [],
-  nodeLimit: 100,
+  nodeLimit: null,
   graphOptions: {
     layout: 'force-directed',
     isPhysicsEnabled: true,

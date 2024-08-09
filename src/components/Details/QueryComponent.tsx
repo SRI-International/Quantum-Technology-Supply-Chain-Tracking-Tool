@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from "react";
 import { Button, Grid, TextField } from "@mui/material";
-import { clearGraph, setComponents, setMaterials, setSuppliers } from '../../reducers/graphReducer';
+import { clearGraph } from '../../reducers/graphReducer';
 import { clearQueryHistory } from '../../reducers/optionReducer';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectGremlin, setError, setQuery, } from '../../reducers/gremlinReducer';
@@ -21,9 +21,6 @@ const Query = ({ }) => {
   function handleClearGraph() {
     dispatch(clearGraph());
     dispatch(clearQueryHistory());
-    dispatch(setSuppliers([]));
-    dispatch(setMaterials([]));
-    dispatch(setComponents([]));
   }
 
   function sendQuery() {

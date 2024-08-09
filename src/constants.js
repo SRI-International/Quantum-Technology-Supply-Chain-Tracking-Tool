@@ -1,6 +1,8 @@
 const SERVER_URL = 'http://localhost:3001';
 export const QUERY_ENDPOINT = `${SERVER_URL}/query`;
 export const QUERY_RAW_ENDPOINT = `${SERVER_URL}/query-raw`;
+export const QUERY_ENTITY_ENDPOINT = `${SERVER_URL}/query-entity-tables`;
+export const QUERY_ENTITY_SUPPLIER_ENDPOINT = `${SERVER_URL}/query-entity-supplier-tables`;
 export const WORKSPACE_ENDPOINT = `${SERVER_URL}/workspaces`;
 export const COMMON_GREMLIN_ERROR = 'Invalid query. Please execute a query to get a set of vertices';
 
@@ -57,7 +59,6 @@ export const SAVED_QUERIES = {
   // "get person nodes that marko has outgoing edges to" : "g.V().has('name', 'marko').out().hasLabel('person')"
 }
 
-export const RISK_QUERY = "g.V().hasLabel('Entity').property('risk', 'low').has('country', 'China').property('risk', 'high')"
 export const RISK_COLORS = {
   risk: { high: "red", medium: "yellow", low: "green" }
 }

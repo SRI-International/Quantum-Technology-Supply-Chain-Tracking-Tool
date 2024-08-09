@@ -111,6 +111,40 @@ function nodesToJson(nodeList) {
   );
 }
 
+function queryEntityTablesProcessing(nodeList) {
+  const uniqueNodes = new Map();
+  nodeList.forEach(node => {
+    const name = node.get('name');
+    if (!uniqueNodes.has(name)) {
+      uniqueNodes.set(name, {
+        id: node.get('id'),
+        name: name,
+        level: node.get('level'),
+        upstreamInput: node.get('upstreamInput')
+      });
+    }
+  });
+  return Array.from(uniqueNodes.values());
+}
+function queryEntitySupplierProcessing(nodeList) {
+  const uniqueNodes = new Map();
+  nodeList.forEach(node => {
+    const name = node.get('name');
+    if (!uniqueNodes.has(name)) {
+      uniqueNodes.set(name, {
+        id: node.get('id'),
+        name: name,
+        country: node.get('country'),
+        risk: node.get('risk')
+      });
+    }
+  });
+  return Array.from(uniqueNodes.values());
+}
+
+
+
+
 function makeQuery(query, nodeLimit) {
   const nodeLimitQuery = !isNaN(nodeLimit) && Number(nodeLimit) > 0 ? `.limit(${nodeLimit})` : '';
   return `${query}${nodeLimitQuery}.dedup().as('node').project('id', 'label', 'properties', 'edges').by(__.id()).by(__.label()).by(__.valueMap().by(__.unfold())).by(__.outE().project('id', 'from', 'to', 'label', 'properties').by(__.id()).by(__.select('node').id()).by(__.inV().id()).by(__.label()).by(__.valueMap().by(__.unfold())).fold())`;
@@ -154,5 +188,43 @@ app.post('/query-raw', (req, res, next) => {
       next(err);
     });
 });
+
+
+app.post('/query-entity-tables', (req, res, next) => {
+  const gremlinHost = req.body.host;
+  const gremlinPort = req.body.port;
+  const query = req.body.query;
+
+  const client = new gremlin.driver.Client(`ws://${gremlinHost}:${gremlinPort}/gremlin`, {
+    traversalSource: 'g',
+    mimeType: 'application/json'
+  });
+  client.submit(query, {})
+    .then((result) => {
+      res.send(queryEntityTablesProcessing(result._items));
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
+
+app.post('/query-entity-supplier-tables', (req, res, next) => {
+  const gremlinHost = req.body.host;
+  const gremlinPort = req.body.port;
+  const query = req.body.query;
+
+  const client = new gremlin.driver.Client(`ws://${gremlinHost}:${gremlinPort}/gremlin`, {
+    traversalSource: 'g',
+    mimeType: 'application/json'
+  });
+  client.submit(query, {})
+    .then((result) => {
+      res.send(queryEntitySupplierProcessing(result._items));
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
+
 
 app.listen(port, () => console.log(`Simple gremlin-proxy server listening on port ${port}!`));

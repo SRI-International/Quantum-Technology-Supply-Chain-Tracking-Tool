@@ -12,9 +12,6 @@ type GraphState = {
   selectedEdge?: EdgeData;
   nodeColorMap: { [index: string]: string };
   selectorNodes: NodeData[];
-  suppliers: string[];
-  components: string[];
-  materials: string[];
   workspace: Workspace | null;
 };
 
@@ -25,9 +22,6 @@ const initialState: GraphState = {
   selectedEdge: undefined,
   nodeColorMap: {},
   selectorNodes: [],
-  suppliers: [],
-  components: [],
-  materials: [],
   workspace: null
 };
 
@@ -111,15 +105,6 @@ const slice = createSlice({
     updateColorMap: (state, action) => {
       Object.assign(state.nodeColorMap, action.payload);
     },
-    setSuppliers: (state, action) => {
-      state.suppliers = action.payload;
-    },
-    setComponents: (state, action) => {
-      state.components = action.payload;
-    },
-    setMaterials: (state, action) => {
-      state.materials = action.payload;
-    },
     setSelectorNodes: (state, action) => {
       state.selectorNodes = action.payload;
     },
@@ -140,10 +125,7 @@ export const {
   setSelectedNode,
   refreshNodeLabels,
   updateColorMap,
-  setSuppliers,
   setSelectorNodes,
-  setMaterials, 
-  setComponents,
   chooseWorkspace,
 } = slice.actions;
 
