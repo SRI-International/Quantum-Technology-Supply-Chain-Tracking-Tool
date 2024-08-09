@@ -11,7 +11,7 @@ import style from './HeaderComponent.module.css';
 import { Edge, Node } from 'vis-network';
 import _ from 'lodash';
 import { selectGraph, setSuppliers } from '../../reducers/graphReducer';
-import { selectGremlin, setQuery, } from '../../reducers/gremlinReducer';
+import { selectGremlin, setError, setQuery, } from '../../reducers/gremlinReducer';
 import axios from 'axios';
 
 interface HeaderComponentProps {
@@ -21,9 +21,8 @@ interface HeaderComponentProps {
 export const HeaderComponent = (props: HeaderComponentProps) => {
   const { nodeLabels, nodeLimit } = useSelector(selectOptions);
   const { components, suppliers, materials } = useSelector(selectGraph);
-  const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
-  const { host, port } = useSelector(selectGremlin);
+  const { host, port, error } = useSelector(selectGremlin);
 
   useEffect(() => {
     onChange();
@@ -32,7 +31,7 @@ export const HeaderComponent = (props: HeaderComponentProps) => {
   const onChange = () => {
     let queryToSend = '';
     let str = '';
-    setError(null);
+    dispatch(setError(null));
     if (suppliers.length > 0) {
       str = suppliers.map((gr) => `'${gr}'`).join(',');
       queryToSend = `g.V().has("Entity", "name", within(${str})).emit().repeat(out())`;
@@ -62,47 +61,37 @@ export const HeaderComponent = (props: HeaderComponentProps) => {
       })
       .catch((error) => {
         console.warn(error)
-        setError(COMMON_GREMLIN_ERROR);
+        dispatch(setError(COMMON_GREMLIN_ERROR));
       });
   }
 
 
   return (
-    <Box className={style["header"]} sx={{ width: `calc(100% - ${props.panelWidth}px)`, position: 'relative' }}>
-      <Paper
-        elevation={10}
-        className={style['header-component-block']}
-      >
-        <ComponentSelector />
-      </Paper>
-      <Paper
-        elevation={10}
-        className={style['header-supplier-block']}
-      >
-        <SupplierSelector />
-      </Paper>
-      <Paper
-        elevation={10}
-        className={style['header-material-block']}
-      >
-        <MaterialSelector />
-      </Paper>
-
-      <br />
-      <div style={{ color: 'red' }}>{error}</div>
+    <Box sx={{ display: 'flex', flexDirection: "column", width: `calc(100% - ${props.panelWidth}px)` }}>
+      <Box className={style["header"]} sx={{ width: '100%', position: 'relative' }}>
+        <Paper
+          elevation={10}
+          className={style['header-component-block']}
+        >
+          <ComponentSelector />
+        </Paper>
+        <Paper
+          elevation={10}
+          className={style['header-supplier-block']}
+        >
+          <SupplierSelector />
+        </Paper>
+        <Paper
+          elevation={10}
+          className={style['header-material-block']}
+        >
+          <MaterialSelector />
+        </Paper>
+      </Box>
+      {error && <div style={{ display: 'flex', color: 'red', marginTop: '10px', marginLeft: 'auto' }}>
+        {error}
+      </div>}
     </Box>
-    //   <Box className="header" sx={{ width: `calc(100% - ${props.panelWidth}px)`, position: 'relative' , display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center'  }}>
-    //     <Paper
-    //     >
-    //       <ComponentSelector />
-    //     </Paper>
-    //    <Paper>
-    //       <SupplierSelector />
-    //     </Paper>
-    //   <Paper>
-    //       <MaterialSelector/>
-    //     </Paper>
-    //   <div style={{ color: 'red' }}>{error}</div>
-    // </Box>
+
   );
 };
