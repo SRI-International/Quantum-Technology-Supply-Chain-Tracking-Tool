@@ -25,6 +25,7 @@ services:
     stdin_open: true
     environment:
       - WATCHPACK_POLLING=true
+      - REACT_APP_HOST=gremlin-server
 
 networks:
   QuantumSupplyChain:

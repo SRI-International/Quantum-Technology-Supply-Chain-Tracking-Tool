@@ -6,8 +6,8 @@ import { onFetchQuery } from '../../logics/actionHelper';
 import { selectOptions, setLayout } from '../../reducers/optionReducer';
 import style from './HeaderComponent.module.css';;
 import _ from 'lodash';
+import { selectGremlin, setError } from '../../reducers/gremlinReducer';
 import { clearGraph, selectGraph } from '../../reducers/graphReducer';
-import { selectGremlin } from '../../reducers/gremlinReducer';
 import axios from 'axios';
 import { applyLayout } from '../../logics/graph';
 
@@ -18,9 +18,8 @@ interface HeaderComponentProps {
 export const HeaderComponent = (props: HeaderComponentProps) => {
   const { nodeLabels, nodeLimit } = useSelector(selectOptions);
   const { selectorNodes } = useSelector(selectGraph);
-  const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
-  const { host, port } = useSelector(selectGremlin);
+  const { host, port, error } = useSelector(selectGremlin);
 
   const componentNames = selectorNodes.filter(node => node.type === 'Component').map(node => node.properties.name);
   const [selectedComponentNames, setSelectedComponentNames] = React.useState<string[]>([]);
@@ -67,7 +66,7 @@ export const HeaderComponent = (props: HeaderComponentProps) => {
     dispatch(setLayout("hierarchical"));
     let queryToSend = '';
     let str = '';
-    setError(null);
+    dispatch(setError(null));
     if (selectedSupplierNames.length > 0) {
       str = selectedSupplierNames.map((gr) => `'${gr}'`).join(',');
       queryToSend = `g.V().has("Entity", "name", within(${str})).emit().repeat(out())`;
@@ -101,143 +100,147 @@ export const HeaderComponent = (props: HeaderComponentProps) => {
       })
       .catch((error) => {
         console.warn(error)
-        setError(COMMON_GREMLIN_ERROR);
+        dispatch(setError(COMMON_GREMLIN_ERROR));
       });
   }
 
 
   return (
-    <Box className={style["header"]} sx={{ width: `calc(100% - ${props.panelWidth}px)`, position: 'relative' }}>
-      <Paper
-        elevation={10}
-        className={style['header-component-block']}
-      >
-        <FormControl size="small" className={style['header-component-select']}>
-          <InputLabel id="component-select">Select Component</InputLabel>
-          <Select
-            labelId="component-select"
-            value={selectedComponentNames}
-            multiple
-            label="Select Component"
-            onChange={handleComponentChange}
-            MenuProps={{
-              anchorOrigin: {
-                vertical: 'bottom',
-                horizontal: 'left',
-              },
-              transformOrigin: {
-                vertical: 'top',
-                horizontal: 'left',
-              },
-              PaperProps: {
-                style: { maxHeight: '600px' }
-              }
-            }}
-          >
-            {componentNames.map((name) => (
-              <MenuItem
-                key={name}
-                value={name}
-              >
-                {name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Paper>
-      <Paper
-        elevation={10}
-        className={style['header-supplier-block']}
-      >
-        <FormControl size="small" className={style['header-supplier-select']}>
-          <InputLabel id="supplier-select">Select Supplier</InputLabel>
-          <Select
-            labelId="supplier-select"
-            value={selectedSupplierNames}
-            multiple
-            label="Select Supplier"
-            onChange={handleSupplierChange}
-            MenuProps={{
-              anchorOrigin: {
-                vertical: 'bottom',
-                horizontal: 'left',
-              },
-              transformOrigin: {
-                vertical: 'top',
-                horizontal: 'left',
-              },
-              PaperProps: {
-                style: { maxHeight: '600px' }
-              }
-            }}
-          >
-            {supplierNames.map((name) => (
-              <MenuItem
-                key={name}
-                value={name}
-              >
-                {name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Paper>
-      <Paper
-        elevation={10}
-        className={style['header-material-block']}
-      >
-        <FormControl size="small" className={style['header-material-select']}>
-          <InputLabel id="material-select">Select Material</InputLabel>
-          <Select
-            labelId="material-select"
-            value={selectedMaterialNames}
-            multiple
-            label="Select Material"
-            onChange={handleMaterialChange}
-            MenuProps={{
-              anchorOrigin: {
-                vertical: 'bottom',
-                horizontal: 'left',
-              },
-              transformOrigin: {
-                vertical: 'top',
-                horizontal: 'left',
-              },
-              PaperProps: {
-                style: { maxHeight: '600px' }
-              }
-            }}
-          >
-            {materialNames.map((name) => (
-              <MenuItem
-                key={name}
-                value={name}
-              >
-                {name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Paper>
+    <Box sx={{ display: 'flex', flexDirection: "column", width: `calc(100% - ${props.panelWidth}px)` }}>
+      <Box className={style["header"]} sx={{ width: '100%', position: 'relative' }}>
+        <Paper
+          elevation={10}
+          className={style['header-component-block']}
+        >
+          <FormControl size="small" className={style['header-component-select']}>
+            <InputLabel id="component-select">Select Component</InputLabel>
+            <Select
+              labelId="component-select"
+              value={selectedComponentNames}
+              multiple
+              label="Select Component"
+              onChange={handleComponentChange}
+              MenuProps={{
+                anchorOrigin: {
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'left',
+                },
+                PaperProps: {
+                  style: { maxHeight: '600px' }
+                }
+              }}
+            >
+              {componentNames.map((name) => (
+                <MenuItem
+                  key={name}
+                  value={name}
+                >
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Paper>
+        <Paper
+          elevation={10}
+          className={style['header-supplier-block']}
+        >
+          <FormControl size="small" className={style['header-supplier-select']}>
+            <InputLabel id="supplier-select">Select Supplier</InputLabel>
+            <Select
+              labelId="supplier-select"
+              value={selectedSupplierNames}
+              multiple
+              label="Select Supplier"
+              onChange={handleSupplierChange}
+              MenuProps={{
+                anchorOrigin: {
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'left',
+                },
+                PaperProps: {
+                  style: { maxHeight: '600px' }
+                }
+              }}
+            >
+              {supplierNames.map((name) => (
+                <MenuItem
+                  key={name}
+                  value={name}
+                >
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Paper>
+        <Paper
+          elevation={10}
+          className={style['header-material-block']}
+        >
+          <FormControl size="small" className={style['header-material-select']}>
+            <InputLabel id="material-select">Select Material</InputLabel>
+            <Select
+              labelId="material-select"
+              value={selectedMaterialNames}
+              multiple
+              label="Select Material"
+              onChange={handleMaterialChange}
+              MenuProps={{
+                anchorOrigin: {
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                },
+                transformOrigin: {
+                  vertical: 'top',
+                  horizontal: 'left',
+                },
+                PaperProps: {
+                  style: { maxHeight: '600px' }
+                }
+              }}
+            >
+              {materialNames.map((name) => (
+                <MenuItem
+                  key={name}
+                  value={name}
+                >
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Paper>
 
-      <br />
-      <Button
-        variant="contained"
-        color="primary"
-        disabled={selectorNodes.length === 0}
-        onClick={handleLoad}
-      >
-        Load
-      </Button>
-      <Button
-        variant="contained"
-        color="primary"
-        disabled={selectorNodes.length === 0}
-        onClick={handleClear}
-      >
-        Clear
-      </Button>
-      <div style={{ color: 'red' }}>{error}</div>
+        <br />
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={selectorNodes.length === 0}
+          onClick={handleLoad}
+        >
+          Load
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={selectorNodes.length === 0}
+          onClick={handleClear}
+        >
+          Clear
+        </Button>
+      </Box>
+      {error && <div style={{ display: 'flex', color: 'red', marginTop: '10px', marginLeft: 'auto' }}>
+        {error}
+      </div>}
     </Box>
   );
 };

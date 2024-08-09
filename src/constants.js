@@ -1,4 +1,5 @@
 const SERVER_URL = 'http://localhost:3001';
+export const HOST = process.env.REACT_APP_HOST || 'localhost';
 export const QUERY_ENDPOINT = `${SERVER_URL}/query`;
 export const QUERY_RAW_ENDPOINT = `${SERVER_URL}/query-raw`;
 export const QUERY_ENTITY_ENDPOINT = `${SERVER_URL}/query-entity-tables`;

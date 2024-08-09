@@ -6,6 +6,7 @@ import Query from "./QueryComponent";
 import { Settings } from "./SettingsComponent";
 import { DetailsComponent } from "./DetailsComponent";
 import CollapsibleTable from "./TableComponent";
+import { QueryBuilder } from "./QueryBuilderComponent";
 import SavedQueries from "./SavedQueriesComponent";
 import EntityTables from "./EntityDetails/EntityTables";
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
@@ -13,6 +14,7 @@ import TocIcon from '@mui/icons-material/Toc';
 import SettingsIcon from '@mui/icons-material/Settings';
 import GradeIcon from '@mui/icons-material/Grade';
 import DatasetIcon from '@mui/icons-material/Dataset';
+import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import BackupTableIcon from '@mui/icons-material/BackupTable';
 
 type QueryHistoryProps = {
@@ -110,8 +112,11 @@ export const SidebarComponent = (props: SidebarComponentProps) => {
           <Tooltip title="Table View" placement="left" arrow>
             <Tab icon={<DatasetIcon />} value={4} />
           </Tooltip>
+          <Tooltip title="Build Query" placement="left" arrow>
+            <Tab icon={<BuildCircleIcon />} value={5} />
+          </Tooltip>
           <Tooltip title="Settings" placement="left" arrow>
-            <Tab icon={<SettingsIcon />} value={5} />
+            <Tab icon={<SettingsIcon />} value={6} />
           </Tooltip>
 
         </Tabs>
@@ -136,6 +141,9 @@ export const SidebarComponent = (props: SidebarComponentProps) => {
             <CollapsibleTable />
           </TabPanel>
           <TabPanel index={5} value={value}>
+            <QueryBuilder />
+          </TabPanel>
+          <TabPanel index={6} value={value}>
             <Settings />
           </TabPanel>
         </Box>
