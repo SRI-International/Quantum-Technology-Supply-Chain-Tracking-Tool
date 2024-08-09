@@ -127,10 +127,11 @@ export const QueryBuilder = () => {
 
 
         })
-        console.log(buildNestedQuery(whereFields));
         dispatch(clearGraph());
         dispatch(setError(null));
+        query = buildNestedQuery(whereFields)
         console.log(query)
+
         if (GRAPH_IMPL === 'vis') {
             highlightNodesAndEdges(null, null);
         }
@@ -170,30 +171,29 @@ export const QueryBuilder = () => {
             }
         }
 
-        function buildTraversal(fields: WhereField[]): string {
-            if (fields.length === 0) return "";
+        function buildTraversal(fields: WhereField[], isFirst: boolean): string {
+
 
             const firstField = fields[0];
             const restFields = fields.slice(1);
 
             const predicate = convertClauseToPredicate(firstField.whereClause, firstField.propertyValue);
-            const currentStep = `.has('${firstField.propertyName}', ${predicate})`;
+            const currentStep = `__.has('${firstField.propertyName}', ${predicate})`;
 
-            if (firstField.operator === OPERATORS.NONE) {
-                if (restFields.length === 0) {
-                    return currentStep;
-                } else {
-                    return `${currentStep}.and(${buildTraversal(restFields)})`;
-                }
-            } else if (firstField.operator === OPERATORS.AND) {
-                return `${currentStep}.and(${buildTraversal(restFields)})`;
-            } else if (firstField.operator === OPERATORS.OR) {
-                return `${currentStep}.or(${buildTraversal(restFields)})`;
+            const prefix = isFirst == true? '' : '__';
+
+            if (restFields.length === 0 && firstField.operator === OPERATORS.NONE) {
+                return currentStep;
+            }
+            else if (firstField.operator === OPERATORS.AND) {
+                return `${prefix}.and(${currentStep}, ${buildTraversal(restFields, false)})`;
+            } 
+            else if (firstField.operator === OPERATORS.OR) {
+                return `${prefix}.or(${currentStep}, ${buildTraversal(restFields, false)})`;
             }
             return "";
         }
-
-        return `g.V().hasLabel('Entity')${buildTraversal(whereFields)}`;
+        return `g.V().hasLabel('${selectedType}')${buildTraversal(whereFields, true)}`;
     }
 
     /* 
@@ -203,25 +203,67 @@ export const QueryBuilder = () => {
     { propertyName: 'risk', whereClause: CLAUSES.EQUAL, propertyValue: 'high', operator: OPERATORS.AND },
     { propertyName: 'population', whereClause: CLAUSES.GREATER_THAN, propertyValue: 5000000, operator: OPERATORS.AND },
     { propertyName: 'stability', whereClause: CLAUSES.EQUAL, propertyValue: 'low', operator: OPERATORS.NONE },
-];
+    ];
 
-looks like: g.V().hasLabel("Entity").and(AND(population > 50000, 1{(stability == low)})
 
-base: 
+           { propertyName: 'stability', whereClause: CLAUSES.EQUAL, propertyValue: 'low', operator: OPERATORS.NONE },
+            { propertyName: 'population', whereClause: CLAUSES.GREATER_THAN, propertyValue: 5000000, operator: OPERATORS.AND },
+        { propertyName: 'risk', whereClause: CLAUSES.EQUAL, propertyValue: 'high', operator: OPERATORS.AND },
+      { propertyName: 'country', whereClause: CLAUSES.EQUAL, propertyValue: 'Denmark', operator: OPERATORS.OR },
+   
+      
+      return OR(country, 
 
+      process OR(country, risk)
+      return AND(OR(country, risk), 
+
+      return AND(AND(OR(country, risk), population), 
+
+      return AND(AND(AND))
+
+    
+    looks like: g.V().hasLabel(Entity).AND(stability, .AND(population, OR(risk, country)))
+    
+    base: 
+    
+
+
+
+    g.V().hasLabel('Entity').and(
+  __.or(
+    __.and(
+      __.has('country', 'Denmark'),
+      __.has('risk', 'high')
+    ),
+    __.and(
+      __.has('country', 'Norway'),
+      __.has('population', P.gt(5000000))
+    )
+  ),
+  __.has('stability', 'low')
+)
+
+
+
+g.V().hasLabel('Entity').and(
+  __.or(
+    __.and(
+      __.has('country', 'Denmark'),
+      __.has('risk', 'high')
+    ),
+    __.and(
+      __.has('country', 'Norway'),
+      __.has('population', P.gt(5000000))
+    )
+  ),
+  __.has('stability', 'low')
+)
     */
 
 
     const whereRow = (form: WhereField, index: number) => {
-        console.log(index);
-        console.log(whereFields[index])
         return (
             <Stack key={index} spacing={1} sx={{ mb: 2, width: '100%' }}>
-                {whereFields[index].operator !== OPERATORS.NONE && (
-                    <Typography variant="subtitle1" align="center">
-                        {whereFields[index].operator}
-                    </Typography>
-                )}
                 <Stack direction="row" spacing={0.5} sx={{ display: 'flex', width: "100%" }}>
                     <Paper elevation={10} sx={{ width: "40%", marginRight: 0.5, flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                         <FormControl size="small" sx={{ flex: 1, height: '100%' }}>
@@ -319,6 +361,11 @@ base:
                         <ClearIcon fontSize="small" />
                     </IconButton>
                 </Stack>
+                {whereFields[index].operator !== OPERATORS.NONE && (
+                    <Typography variant="subtitle1" align="center">
+                        {whereFields[index].operator}
+                    </Typography>
+                )}
             </Stack>
         )
     }

@@ -49,11 +49,16 @@ const slice = createSlice({
         },
         addWhereField: (state, action) => {
             const operator = action.payload
+            const length = state.whereFields.length;
+            if (length > 0) {
+                state.whereFields[length - 1].operator = operator;
+            }
+
             let object = {
                 propertyName: '',
                 whereClause: CLAUSES.EQUAL,
                 propertyValue: '',
-                operator: operator,
+                operator: OPERATORS.NONE,
             };
             state.whereFields = [...state.whereFields, object];
         },
